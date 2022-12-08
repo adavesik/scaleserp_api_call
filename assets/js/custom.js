@@ -45,7 +45,7 @@ $(document).ready(function() {
 
                 $('#final_result').html(articleHTML);
             },
-            done: function ()
+            complete: function ()
             {
                 $('#loader').addClass('hidden')
             }
