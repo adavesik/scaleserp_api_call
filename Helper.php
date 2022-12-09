@@ -21,12 +21,20 @@ class Helper
     private $tilesArray;
     private $adsArray;
 
+    /**
+     * @param $queryString
+     * @return void
+     */
     public function fetchSearchResult($queryString)
     {
         $result = $this->runCURL(self::$SEARCH_RESULT_ENDPOINT, $queryString);
         $this->collectDataFromOrganicResult($result);
     }
 
+    /**
+     * @param $searchResult
+     * @return void
+     */
     public function collectDataFromOrganicResult($searchResult)
     {
         $this->contactPagesArray = array();
@@ -60,9 +68,9 @@ class Helper
                         $this->contactPagesArray[] = 'no link to contact page found';
                     }
                 }
-                $this->domainsArray[] = $item['domain'];
-                $this->linksArray[] = $item['link'];
-                $this->tilesArray[] = $item['title'];
+                $this->domainsArray[] = $item['domain']; // In general, we are not sing this anymore
+                $this->linksArray[]   = $item['link'];
+                $this->tilesArray[]   = $item['title'];
             }
         }
 
@@ -74,8 +82,14 @@ class Helper
                 $this->adsArray[] = $item['ads'];
             }
         }
+        /*---Until here------------------------------*/
     }
 
+    /**
+     * @param $domain
+     * @param array $failCodeList
+     * @return bool
+     */
     private function checkIfWordPress($domain, array $failCodeList = array(404, 301))
     {
         $exists = false;
@@ -119,6 +133,11 @@ class Helper
         return $exists;
     }
 
+    /**
+     * @param $domain
+     * @param $slug
+     * @return bool
+     */
     private function checkIfHasContactPage($domain, $slug)
     {
         $exists = false;
@@ -162,6 +181,11 @@ class Helper
         return $exists;
     }
 
+    /**
+     * @param $endpoint
+     * @param $query
+     * @return bool|string
+     */
     private function runCURL($endpoint, $query)
     {
         # set up the request parameters
