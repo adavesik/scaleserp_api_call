@@ -17,18 +17,21 @@ $number = count($_POST["keywords"]);
 // Check if there is one keyword has benn submitted at least
 if($number > 0)
 {
-    if(trim($_POST["keywords"][0] != ''))
+    for ($i = 0; $i < $number; $i++)
     {
-        $q = $_POST["keywords"][0];
+        if(trim($_POST["keywords"][$i] != ''))
+        {
+            $q = $_POST["keywords"][$i];
 
-        $helper->fetchSearchResult($q);
+            $helper->fetchSearchResult($q);
 
-        $result = array('keyword'=>$q, 'titles'=>$helper->getTilesArray(), 'links'=>$helper->getLinksArray(), 'contacts'=>$helper->getDomainsArray());
-        echo json_encode($result);
-
-/*        print_r($helper->getDomainsArray());
-        print_r($helper->getLinksArray());
-        print_r($helper->getTilesArray());
-        print_r($helper->getAdsArray());*/
+            $kwrds[] = $q;
+            $titles[] = $helper->getTilesArray();
+            $links[] = $helper->getLinksArray();
+            $contacts[] = $helper->getContactPagesArray();
+        }
     }
+
+    $result = array('keywords'=>$kwrds, 'titles'=>$titles, 'links'=>$links, 'contacts'=>$contacts);
+    echo json_encode($result);
 }

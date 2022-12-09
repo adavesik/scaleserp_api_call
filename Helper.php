@@ -9,12 +9,13 @@
 class Helper
 {
     static $SEARCH_RESULT_ENDPOINT = 'https://api.scaleserp.com/search';
-    static $API_KEY = 'BA003D57E568437E94047B4699C48E6B';
-    static $COUNT_OF_SEARCH_RESULT = '30';
+    static $API_KEY                = 'DE8AB7A9185E4908B044BE644453C2FA';
+    static $COUNT_OF_SEARCH_RESULT = '10';
 
-    static $BLOG_CHECK_END = '/license.txt';
-    static $CONTACT_PAGE_VARIANTS = '/contact';
+    static $BLOG_CHECK_END         = '/license.txt';
+    static $CONTACT_PAGE_VARIANTS  = ['/contact', '/contact-us', '/about-us'];
 
+    private $contactPagesArray;
     private $domainsArray;
     private $linksArray;
     private $tilesArray;
@@ -23,12 +24,16 @@ class Helper
     public function fetchSearchResult($queryString)
     {
         $result = $this->runCURL(self::$SEARCH_RESULT_ENDPOINT, $queryString);
-        //return $result;
         $this->collectDataFromOrganicResult($result);
     }
 
     public function collectDataFromOrganicResult($searchResult)
     {
+        $this->contactPagesArray = array();
+        $this->domainsArray = array();
+        $this->linksArray = array();
+        $this->tilesArray = array();
+
         // Make it as array for easy access
         $result_array = json_decode($searchResult, true);
 
@@ -42,12 +47,26 @@ class Helper
             // Check for WordPress
             if($this->checkIfWordPress($item['domain']))
             {
+                // If WordPress then try to find contact page
+                foreach (self::$CONTACT_PAGE_VARIANTS as $slug)
+                {
+                    if ($this->checkIfHasContactPage($item['domain'], $slug))
+                    {
+                        $this->contactPagesArray[] = $item['domain'].$slug;
+                        break; // If contact page has been found then we can terminate checking process
+                    }
+                    else
+                    {
+                        $this->contactPagesArray[] = 'no link to contact page found';
+                    }
+                }
                 $this->domainsArray[] = $item['domain'];
                 $this->linksArray[] = $item['link'];
                 $this->tilesArray[] = $item['title'];
             }
         }
 
+        /* Code below is not necessary at this moment */
         if (!empty($adsResult))
         {
             foreach ($adsResult as $item)
@@ -59,23 +78,88 @@ class Helper
 
     private function checkIfWordPress($domain)
     {
-        $ch = curl_init();
+        $exists = false;
+        $handle = curl_init($domain);
 
-        // set URL and other appropriate options
-        curl_setopt($ch, CURLOPT_URL, $domain.self::$BLOG_CHECK_END);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER , 1 );
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-        // grab URL and pass it to the browser
-        curl_exec($ch);
-        $httpStatus = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
 
-        // close cURL resource, and free up system resources
-        curl_close($ch);
-        if ( $httpStatus == 200 ) {
-            return true;
+        curl_setopt($handle, CURLOPT_HEADER, true);
+
+        curl_setopt($handle, CURLOPT_NOBODY, true);
+
+        curl_setopt($handle, CURLOPT_USERAGENT, true);
+
+        $headers = curl_exec($handle);
+        curl_close($handle);
+
+        if (empty($failCodeList) or !is_array($failCodeList)){
+
+            $failCodeList = array(404);
         }
-        return false;
+
+        if (!empty($headers)){
+
+            $exists = true;
+
+            $headers = explode(PHP_EOL, $headers);
+
+            foreach($failCodeList as $code){
+
+                if (is_numeric($code) and strpos($headers[0], strval($code)) !== false){
+
+                    $exists = false;
+
+                    break;
+                }
+            }
+        }
+
+        return $exists;
+    }
+
+    private function checkIfHasContactPage($domain, $slug)
+    {
+        $exists = false;
+        $handle = curl_init($domain.$slug);
+
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
+
+        curl_setopt($handle, CURLOPT_HEADER, true);
+
+        curl_setopt($handle, CURLOPT_NOBODY, true);
+
+        curl_setopt($handle, CURLOPT_USERAGENT, true);
+
+        $headers = curl_exec($handle);
+        curl_close($handle);
+
+        if (empty($failCodeList) or !is_array($failCodeList)){
+
+            $failCodeList = array(404);
+        }
+
+        if (!empty($headers)){
+
+            $exists = true;
+
+            $headers = explode(PHP_EOL, $headers);
+
+            foreach($failCodeList as $code){
+
+                if (is_numeric($code) and strpos($headers[0], strval($code)) !== false){
+
+                    $exists = false;
+
+                    break;
+                }
+            }
+        }
+
+        return $exists;
     }
 
     private function runCURL($endpoint, $query)
@@ -137,6 +221,14 @@ class Helper
     public function getAdsArray()
     {
         return $this->adsArray;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getContactPagesArray()
+    {
+        return $this->contactPagesArray;
     }
 
 }

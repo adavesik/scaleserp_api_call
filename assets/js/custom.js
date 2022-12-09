@@ -19,31 +19,33 @@ $(document).ready(function() {
             method:"POST",
             data:$('#keywords').serialize(),
             beforeSend: function() {
-                $('#loader').removeClass('hidden')
+                $('#final_result').html('');
+                $('#loader').removeClass('hidden');
             },
             success:function(data)
             {
                 var data = jQuery.parseJSON(data);
-                var articleHTML = "<h2 class=\"lead\">Results were found for the search for: <strong class=\"text-danger\"><span id=\"search_for_keyword\">" + data.keyword+ "</span></strong></h2>";
-
                 console.log(data);
 
-                $.each(data.titles, function(key, item){
-                    articleHTML += "<article class=\"search-result row\">";
-                    articleHTML += "<div class=\"col-xs-12 col-sm-12 col-md-4\">\n" +
-                        "               <h5>"+ item + "</h5>\n" +
-                        "           </div>\n" +
-                        "           <div class=\"col-xs-12 col-sm-12 col-md-4\">\n" +
-                        "               <h5><a href=\"#\" title=\"\">" + data.links[key] + "</a></h5>\n" +
-                        "           </div>\n" +
-                        "                <div class=\"col-xs-12 col-sm-12 col-md-4 excerpet\">\n" +
-                        "                    <h5><a href=\"#\" title=\"\">" + data.contacts[key] + "</a></h5>\n" +
-                        "                </div>\n" +
-                        "                <span class=\"clearfix borda\"></span>\n" +
-                        "            </article>";
-                });
+                $.each(data.keywords, function(key, item){
+                    var articleHTML = "<h2 class=\"lead\">Results were found for the search for: <strong class=\"text-danger\"><span id=\"search_for_keyword\">" + item + "</span></strong></h2>";
 
-                $('#final_result').html(articleHTML);
+                    $.each(data.titles[key], function(key_title, item_title){
+                        articleHTML += "<article class=\"search-result row\">";
+                        articleHTML += "<div class=\"col-xs-12 col-sm-12 col-md-4\">\n" +
+                            "               <h5>"+ item_title + "</h5>\n" +
+                            "           </div>\n" +
+                            "           <div class=\"col-xs-12 col-sm-12 col-md-4\">\n" +
+                            "               <h5><a href=\"" + data.links[key][key_title] + "\" title=\"\">" + data.links[key][key_title] + "</a></h5>\n" +
+                            "           </div>\n" +
+                            "           <div class=\"col-xs-12 col-sm-12 col-md-4 excerpet\">\n" +
+                            "               <h5><a href=\"" + "https:\\" + data.contacts[key][key_title] + "\" title=\"\">" + data.contacts[key][key_title] + "</a></h5>\n" +
+                            "            </div>\n" +
+                            "                <span class=\"clearfix borda\"></span>\n" +
+                            "            </article>";
+                    });
+                    $('#final_result').append(articleHTML);
+                });
             },
             complete: function ()
             {
