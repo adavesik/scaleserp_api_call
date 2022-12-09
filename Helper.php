@@ -10,7 +10,7 @@ class Helper
 {
     static $SEARCH_RESULT_ENDPOINT = 'https://api.scaleserp.com/search';
     static $API_KEY                = 'DE8AB7A9185E4908B044BE644453C2FA';
-    static $COUNT_OF_SEARCH_RESULT = '20';
+    static $COUNT_OF_SEARCH_RESULT = '30';
 
     static $BLOG_CHECK_END         = '/license.txt';
     static $CONTACT_PAGE_VARIANTS  = ['/contact', '/contact-us', '/about-us'];
@@ -55,22 +55,26 @@ class Helper
             // Check for WordPress
             if($this->checkIfWordPress($item['domain']))
             {
-                // If WordPress then try to find contact page
-                foreach (self::$CONTACT_PAGE_VARIANTS as $slug)
+                // Double check by license.txt content
+                if ($this->checkIfLicenseTXT($item['domain']))
                 {
-                    if ($this->checkIfHasContactPage($item['domain'], $slug))
+                    // If WordPress then try to find contact page
+                    foreach (self::$CONTACT_PAGE_VARIANTS as $slug)
                     {
-                        $this->contactPagesArray[] = $item['domain'].$slug;
-                        break; // If contact page has been found then we can terminate checking process
+                        if ($this->checkIfHasContactPage($item['domain'], $slug))
+                        {
+                            $this->contactPagesArray[] = $item['domain'].$slug;
+                            break; // If contact page has been found then we can terminate checking process
+                        }
+                        else
+                        {
+                            $this->contactPagesArray[] = 'no link to contact page found';
+                        }
                     }
-                    else
-                    {
-                        $this->contactPagesArray[] = 'no link to contact page found';
-                    }
+                    $this->domainsArray[] = $item['domain']; // In general, we are not sing this anymore
+                    $this->linksArray[]   = $item['link'];
+                    $this->tilesArray[]   = $item['title'];
                 }
-                $this->domainsArray[] = $item['domain']; // In general, we are not sing this anymore
-                $this->linksArray[]   = $item['link'];
-                $this->tilesArray[]   = $item['title'];
             }
         }
 
@@ -93,7 +97,7 @@ class Helper
     private function checkIfWordPress($domain, array $failCodeList = array(404, 301))
     {
         $exists = false;
-        $handle = curl_init($domain);
+        $handle = curl_init($domain.self::$BLOG_CHECK_END);
 
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
@@ -179,6 +183,43 @@ class Helper
         }
 
         return $exists;
+    }
+
+    private function checkIfLicenseTXT($url)
+    {
+
+        $isWP = false;
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url.self::$BLOG_CHECK_END);
+        curl_setopt($curl, CURLOPT_REFERER, $url.self::$BLOG_CHECK_END);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($curl, CURLOPT_POST, FALSE);
+
+        curl_setopt($curl, CURLOPT_HEADER, TRUE);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($curl, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($curl, CURLOPT_FAILONERROR, TRUE);
+        curl_setopt($curl, CURLOPT_ENCODING, TRUE);
+
+        curl_setopt($curl, CURLOPT_COOKIEJAR, 'cookie.txt');
+        curl_setopt($curl, CURLOPT_COOKIEFILE, 'cookie.txt');
+
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9']);
+
+        curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36');
+
+        $content = curl_exec($curl);
+        curl_close($curl);
+
+        if (strpos($content, "WordPress - Web publishing software") !== false) {
+            $isWP = true;
+        }
+
+        return $isWP;
     }
 
     /**
