@@ -10,7 +10,7 @@ class Helper
 {
     static $SEARCH_RESULT_ENDPOINT = 'https://api.scaleserp.com/search';
     static $API_KEY                = 'DE8AB7A9185E4908B044BE644453C2FA';
-    static $COUNT_OF_SEARCH_RESULT = '10';
+    static $COUNT_OF_SEARCH_RESULT = '20';
 
     static $BLOG_CHECK_END         = '/license.txt';
     static $CONTACT_PAGE_VARIANTS  = ['/contact', '/contact-us', '/about-us'];
@@ -76,7 +76,7 @@ class Helper
         }
     }
 
-    private function checkIfWordPress($domain)
+    private function checkIfWordPress($domain, array $failCodeList = array(404, 301))
     {
         $exists = false;
         $handle = curl_init($domain);
