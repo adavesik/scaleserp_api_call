@@ -59,14 +59,16 @@ class Helper
                 if ($this->checkIfLicenseTXT($item['domain']))
                 {
                     // If WordPress then try to find contact page
+                    $slugCount = count(self::$CONTACT_PAGE_VARIANTS);
                     foreach (self::$CONTACT_PAGE_VARIANTS as $slug)
                     {
+                        $slugCount--;
                         if ($this->checkIfHasContactPage($item['domain'], $slug))
                         {
                             $this->contactPagesArray[] = $item['domain'].$slug;
                             break; // If contact page has been found then we can terminate checking process
                         }
-                        else
+                        elseif($slugCount == 0)
                         {
                             $this->contactPagesArray[] = 'no link to contact page found';
                         }
