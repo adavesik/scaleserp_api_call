@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Add Remove input fields dynamically using jQuery bootstrap</title>
+    <title>Scaleserp API call</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
     <script src="assets/js/custom.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
