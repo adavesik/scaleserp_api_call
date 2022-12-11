@@ -9,7 +9,7 @@
 class Helper
 {
     static $SEARCH_RESULT_ENDPOINT = 'https://api.scaleserp.com/search';
-    static $API_KEY                = 'DE8AB7A9185E4908B044BE644453C2FA';
+    static $API_KEY                = '7B8FFED1DF83425583140A6920C714A6';
     static $COUNT_OF_SEARCH_RESULT = '20';
 
     static $BLOG_CHECK_END         = '/license.txt';
@@ -174,20 +174,32 @@ class Helper
      * @param $slug
      * @return bool
      */
-    private function checkIfHasContactPage($domain, $slug)
+    private function checkIfHasContactPage($domain, $slug, array $failCodeList = array(404))
     {
         $exists = false;
-        $handle = curl_init($domain.$slug);
+        $handle = curl_init($domain);
 
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_URL, $domain.$slug);
+        curl_setopt($handle, CURLOPT_REFERER, $domain.$slug);
 
-        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($handle, CURLOPT_POST, FALSE);
 
-        curl_setopt($handle, CURLOPT_HEADER, true);
+        curl_setopt($handle, CURLOPT_HEADER, TRUE);
+        curl_setopt($handle, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($handle, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($handle, CURLOPT_FAILONERROR, TRUE);
+        curl_setopt($handle, CURLOPT_ENCODING, TRUE);
 
-        curl_setopt($handle, CURLOPT_NOBODY, true);
+        curl_setopt($handle, CURLOPT_COOKIEJAR, 'cookie.txt');
+        curl_setopt($handle, CURLOPT_COOKIEFILE, 'cookie.txt');
 
-        curl_setopt($handle, CURLOPT_USERAGENT, true);
+        curl_setopt($handle, CURLOPT_HTTPHEADER, ['text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9']);
+
+        curl_setopt($handle, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36');
+
 
         $headers = curl_exec($handle);
         curl_close($handle);
