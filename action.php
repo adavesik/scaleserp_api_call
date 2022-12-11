@@ -29,9 +29,10 @@ if($number > 0)
             $titles[] = $helper->getTilesArray();
             $links[] = $helper->getLinksArray();
             $contacts[] = $helper->getContactPagesArray();
+            $all[] = $helper->getAllArray();
         }
     }
 
-    $result = array('keywords'=>$kwrds, 'titles'=>$titles, 'links'=>$links, 'contacts'=>$contacts);
+    $result = array('keywords'=>$kwrds, 'titles'=>$titles, 'links'=>$links, 'contacts'=>$contacts, 'all'=>$all);
     echo json_encode($result);
 }

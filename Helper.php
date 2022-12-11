@@ -10,7 +10,7 @@ class Helper
 {
     static $SEARCH_RESULT_ENDPOINT = 'https://api.scaleserp.com/search';
     static $API_KEY                = 'DE8AB7A9185E4908B044BE644453C2FA';
-    static $COUNT_OF_SEARCH_RESULT = '10';
+    static $COUNT_OF_SEARCH_RESULT = '20';
 
     static $BLOG_CHECK_END         = '/license.txt';
     static $CONTACT_PAGE_VARIANTS  = ['/contact', '/contact-us', '/about-us'];
@@ -20,6 +20,7 @@ class Helper
     private $linksArray;
     private $tilesArray;
     private $adsArray;
+    private $allArray;
 
     /**
      * @param $queryString
@@ -41,6 +42,7 @@ class Helper
         $this->domainsArray = array();
         $this->linksArray = array();
         $this->tilesArray = array();
+        $this->allArray = array();
 
         // Make it as array for easy access
         $result_array = json_decode($searchResult, true);
@@ -78,6 +80,8 @@ class Helper
                 {
                 }*/
             }
+
+            $this->allArray[] = $item['domain'];
         }
 
         /* Code below is not necessary at this moment */
@@ -96,7 +100,7 @@ class Helper
      * @param array $failCodeList
      * @return bool
      */
-    private function checkIfWordPress($domain, array $failCodeList = array(404, 301))
+    private function checkIfWordPress($domain, array $failCodeList = array(404))
     {
         $exists = false;
         $isWPinContent = false;
@@ -211,6 +215,14 @@ class Helper
         }
 
         return $exists;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAllArray()
+    {
+        return $this->allArray;
     }
 
     private function checkIfLicenseTXT($url)
